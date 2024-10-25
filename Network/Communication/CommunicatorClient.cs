@@ -241,5 +241,10 @@ namespace Networking.Communication
                     "CommunicatorClient.Subscribe(): " + e.Message);
             }
         }
+
+        public Dictionary<string, TcpClient> GetClientList()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

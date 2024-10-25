@@ -1,4 +1,5 @@
 using System.Net.Sockets;
+using System.Collections.Generic;
 
 namespace Networking.Communication
 {
@@ -92,5 +93,11 @@ namespace Networking.Communication
         /// <returns> void </returns>
         public void Subscribe(string moduleName, INotificationHandler
             notificationHandler, bool isHighPriority = false);
+
+        /// <summary>
+        /// This function can be called by any module to get the client list.
+        /// </summary>
+        /// <returns> Dictionary of all clients connected to the server. </returns>
+        public Dictionary<string, TcpClient> GetClientList();
     }
 }

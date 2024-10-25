@@ -454,5 +454,13 @@ namespace Networking.Communication
                     "CommunicatorServer.Subscribe(): " + e.Message);
             }
         }
+
+        /// <summary>
+        /// Returns a dictionary of all clients connected to the server.
+        /// </summary>
+        /// <returns>Dictionary of all clients connected to the server.</returns>
+        public Dictionary<string, TcpClient> GetClientList(){ 
+            return _clientIdToClientSocket;
+        }
     }
 }
