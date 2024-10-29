@@ -107,9 +107,6 @@ namespace Networking.Communication
             while (true)
             {
                 TcpClient client = listener.AcceptTcpClient();
-                string clientId = client.Client.RemoteEndPoint.ToString();
-                clients[clientId] = client;
-                Console.WriteLine($"Client {clientId} connected.");
 
                 // Notify handlers
                 foreach (var handler in handlers.Values)
