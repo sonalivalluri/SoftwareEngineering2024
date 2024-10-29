@@ -127,10 +127,12 @@ namespace Networking.Communication
             while (true)
             {
                 NetworkStream stream = client.GetStream();
-                byte[] buffer = new byte[1024];
-                int bytesRead = stream.Read(buffer, 0, buffer.Length);
-                if (bytesRead == 0)
-                {
+                
+                // Read the length of the packet
+                //
+                byte[] buflen = new byte[4];
+                int bytesRead = stream.Read(buflen, 0, buflen.Length);
+                if (bytesRead == 0) {
                     Console.WriteLine($"Client {clientId} disconnected.");
                     clients.Remove(clientId);
 
@@ -141,6 +143,11 @@ namespace Networking.Communication
                     break;
                 }
 
+                int packetLength = BitConverter.ToInt32(buflen, 0);
+
+                byte[] buffer = new byte[packetLength];
+                bytesRead = stream.Read(buffer, 0, buffer.Length);
+                if (bytesRead == 0) break;
                 string receivedData = Encoding.UTF8.GetString(buffer, 0, bytesRead);
                 string[] packetParts = receivedData.Split(new[] { ':' }, 2);
                 if (packetParts.Length == 2)
@@ -159,6 +166,7 @@ namespace Networking.Communication
         public void Send(string serializedData, string moduleOfPacket, string? destination)
         {
             string packet = $"{moduleOfPacket}:{serializedData}";
+            byte[] buflen = BitConverter.GetBytes(packet.Length);
             byte[] buffer = Encoding.UTF8.GetBytes(packet);
 
             if (destination == null)
@@ -172,6 +180,7 @@ namespace Networking.Communication
             else if (clients.TryGetValue(destination, out TcpClient client))
             {
                 // Send to a specific client
+                client.GetStream().Write(buflen, 0, buflen.Length);
                 client.GetStream().Write(buffer, 0, buffer.Length);
             }
         }

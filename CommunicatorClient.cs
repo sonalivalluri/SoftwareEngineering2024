@@ -31,8 +31,15 @@ namespace Networking.Communication
             while (true)
             {
                 NetworkStream stream = client.GetStream();
-                byte[] buffer = new byte[1024];
-                int bytesRead = stream.Read(buffer, 0, buffer.Length);
+                
+                byte[] buflen = new byte[4];
+                int bytesRead = stream.Read(buflen, 0, buflen.Length);
+                if (bytesRead == 0) break;
+
+                int packetLength = BitConverter.ToInt32(buflen, 0);
+
+                byte[] buffer = new byte[packetLength];
+                bytesRead = stream.Read(buffer, 0, buffer.Length);
                 if (bytesRead == 0) break;
 
                 string receivedData = Encoding.UTF8.GetString(buffer, 0, bytesRead);
@@ -53,7 +60,9 @@ namespace Networking.Communication
         public void Send(string serializedData, string moduleOfPacket, string? destination)
         {
             string packet = $"{moduleOfPacket}:{serializedData}";
+            byte[] buflen = BitConverter.GetBytes(packet.Length);
             byte[] buffer = Encoding.UTF8.GetBytes(packet);
+            client.GetStream().Write(buflen, 0, buflen.Length);
             client.GetStream().Write(buffer, 0, buffer.Length);
         }
 
