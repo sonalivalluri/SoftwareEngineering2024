@@ -26,6 +26,10 @@ namespace Networking.Communication
             }
         }
 
+        /// <summary>
+        /// Receives data from clients and notifies handlers
+        /// </summary>
+        /// <param name="state"></param>
         private void ReceiveData(object state)
         {
             while (true)
@@ -57,6 +61,14 @@ namespace Networking.Communication
             }
         }
 
+        /// <summary>
+        /// Sends data to clients
+        /// If destination is null, broadcast to all clients
+        /// </summary>
+        /// <param name="serializedData">data as serialized string</param>
+        /// <param name="moduleOfPacket">module to which the data belongs</param>
+        /// <param name="destination">null here as data sent to server</param>
+        /// <returns></returns>
         public void Send(string serializedData, string moduleOfPacket, string? destination)
         {
             string packet = $"{moduleOfPacket}:{serializedData}";
@@ -66,6 +78,12 @@ namespace Networking.Communication
             client.GetStream().Write(buffer, 0, buffer.Length);
         }
 
+        /// <summary>
+        /// Subscribes to a module
+        /// </summary>
+        /// <param name="moduleName">module to subscribe to</param>
+        /// <param name="notificationHandler">handler to notify when data is received</param>
+        /// <param name="isHighPriority">whether the handler should be notified first</param>
         public void Subscribe(string moduleName, INotificationHandler notificationHandler, bool isHighPriority = false)
         {
             handlers[moduleName] = notificationHandler;

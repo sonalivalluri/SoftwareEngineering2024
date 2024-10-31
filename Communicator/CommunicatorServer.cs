@@ -25,7 +25,8 @@ namespace Networking.Communication
             // Start listening for clients
             ThreadPool.QueueUserWorkItem(AcceptClients);
 
-            return $"{serverIP}:{serverPort}";
+            // Return the IP address and port number
+            return $"{ip}:{port}";
         }
 
         private static string FindIpAddress()
@@ -102,6 +103,10 @@ namespace Networking.Communication
         }
 
  
+        /// <summary>
+        /// Accepts clients and notifies handlers
+        /// </summary>
+        /// <param name="state"></param>
         private void AcceptClients(object state)
         {
             while (true)
@@ -119,6 +124,13 @@ namespace Networking.Communication
             }
         }
 
+
+
+        /// <summary>
+        /// Receives data from clients and notifies handlers
+        /// </summary>
+        /// <param name="clientObj"></param>
+        /// <returns></returns>
         private void ReceiveData(object clientObj)
         {
             TcpClient client = (TcpClient)clientObj;
@@ -129,7 +141,6 @@ namespace Networking.Communication
                 NetworkStream stream = client.GetStream();
                 
                 // Read the length of the packet
-                //
                 byte[] buflen = new byte[4];
                 int bytesRead = stream.Read(buflen, 0, buflen.Length);
                 if (bytesRead == 0) {
@@ -147,9 +158,12 @@ namespace Networking.Communication
 
                 byte[] buffer = new byte[packetLength];
                 bytesRead = stream.Read(buffer, 0, buffer.Length);
+
                 if (bytesRead == 0) break;
+
                 string receivedData = Encoding.UTF8.GetString(buffer, 0, bytesRead);
                 string[] packetParts = receivedData.Split(new[] { ':' }, 2);
+
                 if (packetParts.Length == 2)
                 {
                     string module = packetParts[0];
@@ -163,6 +177,14 @@ namespace Networking.Communication
             }
         }
 
+        /// <summary>
+        /// Sends data to clients
+        /// If destination is null, broadcast to all clients
+        /// </summary>
+        /// <param name="serializedData"></param>
+        /// <param name="moduleOfPacket"></param>
+        /// <param name="destination"></param>
+        /// <returns></returns>
         public void Send(string serializedData, string moduleOfPacket, string? destination)
         {
             string packet = $"{moduleOfPacket}:{serializedData}";
@@ -185,6 +207,12 @@ namespace Networking.Communication
             }
         }
 
+        /// <summary>
+        /// Subscribes to a module
+        /// </summary>
+        /// <param name="moduleName"></param>
+        /// <param name="notificationHandler"></param>
+        /// <param name="isHighPriority"></param>
         public void Subscribe(string moduleName, INotificationHandler notificationHandler, bool isHighPriority = false)
         {
             handlers[moduleName] = notificationHandler;
@@ -199,16 +227,29 @@ namespace Networking.Communication
             }
         }
 
+        /// <summary>
+        /// Adds a client to the list of clients
+        /// </summary>
+        /// <param name="clientId"></param>
+        /// <param name="socket"></param>
         public void AddClient(string clientId, TcpClient socket)
         {
             clients[clientId] = socket;
         }
 
+        /// <summary>
+        /// Removes a client from the list of clients
+        /// </summary>
+        /// <param name="clientId"></param>
         public void RemoveClient(string clientId)
         {
             clients.Remove(clientId);
         }
 
+        /// <summary>
+        /// Returns the list of clients
+        /// </summary>
+        /// <returns>Dictionary of clientId and TcpClient</returns>
         public Dictionary<string, TcpClient> GetClientList()
         {
             return clients;
